@@ -1,16 +1,13 @@
 import hashlib
 import requests
-
 import sys
-
 from uuid import uuid4
-
 from timeit import default_timer as timer
-
 import random
+import multiprocessing
 
 
-def proof_of_work(last_proof):
+def proof_of_work(last_proof, powValue):
     """
     Multi-Ouroboros of Work Algorithm
     - Find a number p' such that the last six digits of hash(p) are equal
@@ -22,11 +19,13 @@ def proof_of_work(last_proof):
     """
 
     start = timer()
+    last_hash = hashlib.sha256(f'{last_proof}'.encode()).hexdigest()
+
 
     print("Searching for next proof")
-    proof = 0
-    while valid_proof(last_proof, proof) is False:
-        proof += 1
+    proof = 1
+    while valid_proof(last_hash, proof) is False:
+        proof += powValue**powValue
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
     return proof
@@ -40,16 +39,13 @@ def valid_proof(last_hash, proof):
     IE:  last_hash: ...AE9123456, new hash 123456888...
     """
 
-    guess = f'{last_hash}{proof}'.encode()
+    guess = f'{proof}'.encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
 
-    last_hash = str(last_hash)
-    guess_hash = str(guess_hash)
-
-    return last_hash[-6:] == guess_hash[:6]
+    return str(last_hash)[-6:] == str(proof)[:6]
 
 
-if __name__ == '__main__':
+def start(powValue):
     # What node are we interacting with?
     if len(sys.argv) > 1:
         node = sys.argv[1]
@@ -73,7 +69,7 @@ if __name__ == '__main__':
         # Get the last proof from the server
         r = requests.get(url=node + "/last_proof")
         data = r.json()
-        new_proof = proof_of_work(data.get('proof'))
+        new_proof = proof_of_work(data.get('proof'), powValue)
 
         post_data = {"proof": new_proof,
                      "id": id}
@@ -85,3 +81,8 @@ if __name__ == '__main__':
             print("Total coins mined: " + str(coins_mined))
         else:
             print(data.get('message'))
+
+if __name__ == '__main__':
+    inputArr = [num for num in range(0,30)]
+    p = multiprocessing.Pool()
+    p.map(start,inputArr)
