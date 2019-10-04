@@ -16,15 +16,12 @@ def reconstruct_trip(tickets, length):
     hashtable = HashTable(length)
     route = []
     firstTicket = None
-    lastTicket = None
 
     for ticket in tickets:
         hash_table_insert(hashtable, ticket.source, ticket.destination)
 
         if ticket.source == 'NONE':
             firstTicket = ticket.destination
-        elif ticket.destination == 'NONE':
-            lastTicket = ticket.source
 
     route.append(firstTicket)
     current = firstTicket
