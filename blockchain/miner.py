@@ -38,11 +38,9 @@ def valid_proof(last_hash, proof):
 
     IE:  last_hash: ...AE9123456, new hash 123456888...
     """
-
     guess = f'{proof}'.encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
-
-    return str(last_hash)[-6:] == str(proof)[:6]
+    return str(last_hash)[-6:] == str(guess_hash)[:6]
 
 
 def start(powValue):
@@ -50,8 +48,8 @@ def start(powValue):
     if len(sys.argv) > 1:
         node = sys.argv[1]
     else:
-        # node = "https://lambda-coin.herokuapp.com/api"
-        node = "https://lambda-coin-test-1.herokuapp.com/api"
+        node = "https://lambda-coin.herokuapp.com/api"
+        # node = "https://lambda-coin-test-1.herokuapp.com/api"
 
     coins_mined = 0
 
@@ -83,6 +81,6 @@ def start(powValue):
             print(data.get('message'))
 
 if __name__ == '__main__':
-    inputArr = [num for num in range(0,30)]
+    inputArr = [num for num in range(1,30)]
     p = multiprocessing.Pool()
     p.map(start,inputArr)
